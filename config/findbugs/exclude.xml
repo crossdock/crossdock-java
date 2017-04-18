@@ -1,0 +1,20 @@
+<FindBugsFilter>
+  <!-- Ignore generated classes -->
+  <Match>
+    <Or>
+      <Class name="~.*\.generated\..*"/>
+      <Class name="~thrift\.test\..*"/>
+    </Or>
+  </Match>
+  <!--
+  Don't complain about unread fields on,
+    @Rule public MockitoRule mockitoRule
+  -->
+  <Match>
+    <Bug code="UrF"/>
+    <Or>
+      <Field type="org.junit.rules.Timeout"/>
+      <Field type="org.mockito.junit.MockitoRule"/>
+    </Or>
+  </Match>
+</FindBugsFilter>

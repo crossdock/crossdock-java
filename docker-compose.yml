@@ -1,0 +1,87 @@
+version: '2'
+services:
+    crossdock:
+        image: crossdock/crossdock
+        dns_search: .
+        links:
+            - java
+            - go
+            - node
+            - python
+            - python-sync
+            # TODO: enable the following links
+            #- redis
+        environment:
+            - REPORT=list
+            - WAIT_FOR=go,java,node,python,python-sync
+
+            - AXIS_CLIENT=go,java,node,python,python-sync
+            - AXIS_SERVER=go,java,node,python
+            - AXIS_TRANSPORT=http
+            - AXIS_ENCODING=json,raw,thrift
+            - AXIS_ERRORS_HTTPCLIENT=go # pending update to node test
+            - AXIS_CTXCLIENT=go
+            - AXIS_CTXSERVER=java
+            - AXIS_APACHETHRIFTCLIENT=go
+            - AXIS_APACHETHRIFTSERVER=java
+            - AXIS_GAUNTLET=go
+            - AXIS_HTTPSERVER=go,java
+            - AXIS_CLIENT_ONEWAY=go,java
+            - AXIS_SERVER_ONEWAY=go,java
+            - AXIS_TRANSPORT_ONEWAY=http # TODO: redis
+
+            # Transports available to the ctxpropagation behavior for multihop requests.
+            - AXIS_CTXAVAILABLETRANSPORTS=http
+
+            - BEHAVIOR_RAW=client,server,transport
+            - BEHAVIOR_JSON=client,server,transport
+            - BEHAVIOR_THRIFT=client,server,transport
+            - BEHAVIOR_ONEWAY=client_oneway,server_oneway,transport_oneway,encoding
+            - BEHAVIOR_HEADERS=client,server,transport,encoding
+            - BEHAVIOR_ERRORS_HTTPCLIENT=errors_httpclient,server
+            - BEHAVIOR_TIMEOUT=client,server,transport
+            - BEHAVIOR_CTXPROPAGATION=ctxclient,ctxserver,transport,ctxavailabletransports
+            - BEHAVIOR_ONEWAY_CTXPROPAGATION=client_oneway,server_oneway,transport_oneway
+            - BEHAVIOR_THRIFTGAUNTLET=gauntlet,server,transport
+            # TODO: Enable each of behaviors below
+            # - BEHAVIOR_HTTPSERVER=client,httpserver
+            # - BEHAVIOR_APACHETHRIFT=apachethriftclient,apachethriftserver
+
+    java:
+        dns_search: .
+        works.build: .
+        ports:
+            - "8080-8088"
+
+    node:
+        dns_search: .
+        image: yarpc/yarpc-node
+        ports:
+            - "8080-8087"
+
+    go:
+        dns_search: .
+        # TODO: change the image to yarpc/yarpc-go after release that
+        # fixes https://github.com/yarpc/yarpc-go/issues/777
+        image: yarpc/yarpc-go:dev
+        ports:
+            - "8080-8088"
+
+    python:
+        dns_search: .
+        image: yarpc/yarpc-python
+        ports:
+            - "8080-8087"
+
+    python-sync:
+        dns_search: .
+        image: yarpc/yarpc-python
+        ports:
+            - 8080
+        environment:
+            - SYNC=1
+
+    #redis:
+    #    image: redis
+    #    ports:
+    #        - 6379
