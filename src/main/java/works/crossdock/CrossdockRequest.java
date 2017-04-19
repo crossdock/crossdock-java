@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class CrossdockRequest {
-  @NonNull  private final Map<String, String> params;
+  @NonNull private final Map<String, String> params;
 
   public String getParam(String key) {
     return params.get(key);

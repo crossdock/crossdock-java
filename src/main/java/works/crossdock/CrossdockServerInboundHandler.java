@@ -60,7 +60,6 @@ public class CrossdockServerInboundHandler extends SimpleChannelInboundHandler<F
       ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
       return;
     }
-
     Behavior br = behaviors.get(behavior);
     runBehavior(br, request)
         .whenComplete(
@@ -73,7 +72,15 @@ public class CrossdockServerInboundHandler extends SimpleChannelInboundHandler<F
             });
   }
 
-  private CompletionStage<CrossdockResponse> runBehavior(Behavior br, CrossdockRequest req)
+  /**
+   * Runs the request against the passed behavior.
+   *
+   * @param br behavior to run against
+   * @param req request to run
+   * @return CompletionStage that contains crossdockResponse
+   * @throws Exception if behavior throws an exception
+   */
+  public CompletionStage<CrossdockResponse> runBehavior(Behavior br, CrossdockRequest req)
       throws Exception {
     if (br == null) {
       return CompletableFuture.completedFuture(
@@ -103,7 +110,13 @@ public class CrossdockServerInboundHandler extends SimpleChannelInboundHandler<F
     ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
   }
 
-  private CrossdockRequest populateRequest(QueryStringDecoder queryStringDecoder) {
+  /**
+   * Constructs a crossdockRequest from passed queryStringDecoder.
+   *
+   * @param queryStringDecoder decoder to construct request from
+   * @return crossDockRequest formed from the queryStringDecoder
+   */
+  public CrossdockRequest populateRequest(QueryStringDecoder queryStringDecoder) {
     Map<String, List<String>> queryParams = queryStringDecoder.parameters();
     Map<String, String> params = new HashMap<>();
     queryParams.forEach(
