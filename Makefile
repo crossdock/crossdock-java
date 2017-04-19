@@ -1,4 +1,4 @@
-.PHONY : crossdock crossdock-fresh clean coverage dockclean install test works.build harness release
+.PHONY : crossdock crossdock-fresh clean coverage dockclean install test build harness release
 
 .DEFAULT_GOAL : help
 
@@ -6,12 +6,12 @@ help:  ## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
 
 crossdock: dockclean
-	docker-compose works.build java
+	docker-compose build java
 	docker-compose run crossdock
 
-crossdock-fresh: dockclean works.build
+crossdock-fresh: dockclean build
 	docker-compose pull
-	docker-compose works.build
+	docker-compose build
 	docker-compose run crossdock
 
 clean:
@@ -30,13 +30,13 @@ install:  ## Install project dependencies.
 test:
 	./gradlew check
 
-works.build:
-	./gradlew works.build --stacktrace
+build:
+	./gradlew build --stacktrace
 
 harness:  # Run harness crossdock server locally without docker.
-	java -jar yarpc-crossdock/works.build/libs/yarpc-crossdock-jar-with-dependencies.jar
+	java -jar crossdock-java/build/libs/crossdock-jar-with-dependencies.jar
 
-release: clean works.build test
+release: clean build test
 	@echo "please make sure you are using java 7."
 	@read -p "Press any key to continue, or press Control+C to cancel. " x;
 	./gradlew uploadArchives

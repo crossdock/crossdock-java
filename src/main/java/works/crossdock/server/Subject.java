@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package crossdock.server;
+package works.crossdock.server;
 
 /** Defines the start and stop functionality of different subjects. */
 public interface Subject {

@@ -25,7 +25,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
-public final class TestResult {
+public class TestResult {
   @Getter private String output;
   @Getter private String status;
 }
