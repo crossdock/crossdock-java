@@ -21,7 +21,7 @@ if [[ -z "$GITHUB_TOKEN" ]]; then
 	exit 1
 fi
 
-JAVADOCS_DIR="$(pwd)/works.build/docs/javadoc"
+JAVADOCS_DIR="$(pwd)/build/docs/javadoc"
 DATE=$(date -u +"%Y-%m-%d %H:%M:%S")  # -u = utc
 
 cd "$HOME"
@@ -34,6 +34,6 @@ cd gh-pages
 git rm -rf ./javadoc-latest
 cp -R "$JAVADOCS_DIR" ./javadoc-latest
 git add -f ./javadoc-latest
-git commit -m "javadoc: Update from works.build $TRAVIS_BUILD_NUMBER at $DATE"
+git commit -m "javadoc: Update from build $TRAVIS_BUILD_NUMBER at $DATE"
 git push -q origin gh-pages >/dev/null
 echo "Javadocs published at $DATE"

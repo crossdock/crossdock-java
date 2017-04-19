@@ -7,7 +7,7 @@ if [ -x "$PREFIX/bin/thrift" ]; then
 	exit 0
 fi
 
-BUILD="$HOME/.thrift-works.build"
+BUILD="$HOME/.thrift.build"
 mkdir -p "$BUILD"
 cd "$BUILD"
 

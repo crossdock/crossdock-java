@@ -26,7 +26,7 @@ import java.util.List;
 import lombok.Getter;
 
 public class CrossdockResponse {
-  @Getter private List<TestResult> results = new ArrayList<>();
+  @Getter private final List<TestResult> results = new ArrayList<>();
 
   public CrossdockResponse success(String message) {
     results.add(new TestResult(message, Status.PASSED.getDesc()));

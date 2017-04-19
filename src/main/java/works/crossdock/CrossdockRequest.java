@@ -22,11 +22,12 @@
 package works.crossdock;
 
 import java.util.Map;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class CrossdockRequest {
-  private final Map<String, String> params;
+  @NonNull  private final Map<String, String> params;
 
   public String getParam(String key) {
     return params.get(key);

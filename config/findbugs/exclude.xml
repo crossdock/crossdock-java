@@ -1,11 +1,4 @@
 <FindBugsFilter>
-  <!-- Ignore generated classes -->
-  <Match>
-    <Or>
-      <Class name="~.*\.generated\..*"/>
-      <Class name="~thrift\.test\..*"/>
-    </Or>
-  </Match>
   <!--
   Don't complain about unread fields on,
     @Rule public MockitoRule mockitoRule
