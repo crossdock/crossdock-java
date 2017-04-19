@@ -21,7 +21,7 @@
  */
 package works.crossdock;
 
-public class CrossdockTest {
+public class CrossdockIntegrationTest {
   private static final int crossdockPort = 8080;
   private static CrossdockClient crossdockClient;
 
