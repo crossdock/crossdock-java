@@ -4,7 +4,7 @@
       <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
-  <logger name="yarpc-crossdock" level="DEBUG"/>
+  <logger name="crossdock-java" level="DEBUG"/>
   <root level="DEBUG">
     <appender-ref ref="STDOUT" />
   </root>

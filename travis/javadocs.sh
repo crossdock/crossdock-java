@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
-# This builds the Javadocs for the project and if this works.build was triggered by
+# This builds the Javadocs for the project and if this build was triggered by
 # a merge to master, also updates the Javadocs on
-# https://yarpc.github.io/yarpc-java
+# https://github.com/crossdock/crossdock-java/
 
 ./gradlew javadocRoot
 

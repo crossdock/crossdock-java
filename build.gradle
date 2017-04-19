@@ -12,9 +12,9 @@ plugins {
     id "io.spring.dependency-management" version "1.0.1.RELEASE"
 }
 
-description = 'Crossdock test library'
+description = 'Crossdock library to enable cross language testing'
 
-group = 'io.crossdock'
+group = 'works.crossdock'
 
 version = '0.0.1-SNAPSHOT'
 
@@ -141,7 +141,7 @@ uploadArchives {
             pom.project {
                 name 'crossdock-java'
                 packaging 'jar'
-                description 'A testing library for cross language compatibility'
+                description 'A library to enable cross language testing'
                 url 'https://github.com/crossdock/crossdock-java'
 
                 scm {
@@ -154,14 +154,6 @@ uploadArchives {
                     license {
                         name 'MIT License'
                         url 'http://www.opensource.org/licenses/mit-license.php'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id 'junchaow'
-                        name 'Junchao Wu'
-                        email 'junchaow@uber.com'
                     }
                 }
             }
@@ -187,7 +179,7 @@ task javadocRoot(type: Javadoc) {
 //create a single Jar with all dependencies
 task fatJar(type: Jar) {
     manifest {
-        attributes('Implementation-yarpc-crossdock': 'yarpc-crossdock',
+        attributes('Implementation-crossdock-java': 'crossdock-java',
                 'Implementation-Version': project.version,
                 'Main-Class': 'works.crossdock.CrossdockClient')
     }
