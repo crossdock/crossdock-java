@@ -32,9 +32,9 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 
-public class CrossdockTestClient {
+public class CrossdockClient {
   private static final int crossdockPort = 8080;
-  private static CrossdockTestClient crossdockTestClient;
+  private static CrossdockClient crossdockClient;
 
   /**
    * Starts the Crossdock execution.
@@ -42,8 +42,8 @@ public class CrossdockTestClient {
    * @param args custom arguments to start main
    */
   public static void main(String[] args) throws Exception {
-    crossdockTestClient = new CrossdockTestClient();
-    crossdockTestClient.start();
+    crossdockClient = new CrossdockClient();
+    crossdockClient.start();
   }
 
   /**
