@@ -38,7 +38,8 @@ public class CrossdockServerHandlerTest {
     Map<String, String> paramsMap = new HashMap<>();
     paramsMap.put("key1", "value1");
     paramsMap.put("key2", "value2");
-    CrossdockServerInboundHandler serverInboundHandler = new CrossdockServerInboundHandler();
+    CrossdockServerInboundHandler serverInboundHandler =
+        new CrossdockServerInboundHandler(new HashMap<>());
     QueryStringDecoder decoder =
         new QueryStringDecoder("http://fakerequest?key1=value1&key2=value2");
     CrossdockRequest gotRequest = serverInboundHandler.populateRequest(decoder);
@@ -60,7 +61,8 @@ public class CrossdockServerHandlerTest {
     }
 
     TestBehavior testBehavior = new TestBehavior();
-    CrossdockServerInboundHandler serverInboundHandler = new CrossdockServerInboundHandler();
+    CrossdockServerInboundHandler serverInboundHandler =
+        new CrossdockServerInboundHandler(new HashMap<>());
     QueryStringDecoder decoder = new QueryStringDecoder("http://fakerequest?ping=pong");
     CrossdockRequest request = serverInboundHandler.populateRequest(decoder);
     CrossdockResponse crossdockResponse =

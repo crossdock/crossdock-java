@@ -31,21 +31,23 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import lombok.RequiredArgsConstructor;
+import works.crossdock.client.Behavior;
 
+@RequiredArgsConstructor
 public class CrossdockClient {
-  private static final int crossdockPort = 8080;
-  private static CrossdockClient crossdockClient;
+  private final int crossdockPort;
+  private final Map<String, Behavior> behaviors = new HashMap<>();
 
-  /**
-   * Starts the Crossdock execution.
-   *
-   * @param args custom arguments to start main
-   */
-  public static void main(String[] args) throws Exception {
-    crossdockClient = new CrossdockClient();
-    crossdockClient.start();
+  public CrossdockClient(int crossdockPort, Map<String,Behavior> inputBehaviors){
+    this.crossdockPort = crossdockPort;
+    for(Entry<String,Behavior> entry : inputBehaviors.entrySet()) {
+      behaviors.put(entry.getKey(),entry.getValue());
+    }
   }
-
   /**
    * Starts and stops the crossdock server.
    *
@@ -66,7 +68,7 @@ public class CrossdockClient {
                   ch.pipeline()
                       .addLast(new HttpServerCodec())
                       .addLast(new HttpObjectAggregator(Integer.MAX_VALUE))
-                      .addLast(new CrossdockServerInboundHandler());
+                      .addLast(new CrossdockServerInboundHandler(behaviors));
                 }
               })
           .option(ChannelOption.SO_BACKLOG, 128)

@@ -21,17 +21,32 @@
  */
 package works.crossdock;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import org.junit.Test;
+import works.crossdock.client.Behavior;
+
 public class CrossdockIntegrationTest {
   private static final int crossdockPort = 8080;
   private static CrossdockClient crossdockClient;
 
-  /**
-   * Starts the Crossdock execution.
-   *
-   * @param args custom arguments to start main
-   */
-  public static void main(String[] args) throws Exception {
-    crossdockClient = new CrossdockClient();
+  @Test
+ public void testEndtoEnd() throws Exception {
+    class TestBehavior implements Behavior {
+
+      @Override
+      public CompletionStage<CrossdockResponse> run(CrossdockRequest request) throws Exception {
+        return CompletableFuture.completedFuture(
+            new CrossdockResponse().success("Reply from integration"));
+      }
+    }
+
+    Map<String,Behavior> behaviorMap = new HashMap<>();
+    behaviorMap.put("test", new TestBehavior());
+    crossdockClient = new CrossdockClient(crossdockPort,behaviorMap);
     crossdockClient.start();
+
   }
 }
