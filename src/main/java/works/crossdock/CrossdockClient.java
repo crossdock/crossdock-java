@@ -31,55 +31,67 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import lombok.RequiredArgsConstructor;
 import works.crossdock.client.Behavior;
 
-@RequiredArgsConstructor
 public class CrossdockClient {
   private final int crossdockPort;
   private final Map<String, Behavior> behaviors = new HashMap<>();
 
-  public CrossdockClient(int crossdockPort, Map<String,Behavior> inputBehaviors){
+  /**
+   * Creates a client handle for crossdock tests.
+   *
+   * @param crossdockPort port to run the crossdock server on
+   * @param inputBehaviors map of behaviors and actions to execute
+   */
+  public CrossdockClient(int crossdockPort, Map<String, Behavior> inputBehaviors) {
     this.crossdockPort = crossdockPort;
-    for(Entry<String,Behavior> entry : inputBehaviors.entrySet()) {
-      behaviors.put(entry.getKey(),entry.getValue());
+    for (Entry<String, Behavior> entry : inputBehaviors.entrySet()) {
+      behaviors.put(entry.getKey(), entry.getValue());
     }
   }
+
   /**
    * Starts and stops the crossdock server.
    *
    * @throws Exception if the start of server fails
    */
-  public void start() throws Exception {
+  public Future<Void> start() throws Exception {
     EventLoopGroup bossGroup = new NioEventLoopGroup();
     EventLoopGroup workerGroup = new NioEventLoopGroup();
-    try {
-      ServerBootstrap bootstrap = new ServerBootstrap();
-      bootstrap
-          .group(bossGroup, workerGroup)
-          .channel(NioServerSocketChannel.class)
-          .childHandler(
-              new ChannelInitializer<SocketChannel>() {
-                @Override
-                public void initChannel(SocketChannel ch) throws Exception {
-                  ch.pipeline()
-                      .addLast(new HttpServerCodec())
-                      .addLast(new HttpObjectAggregator(Integer.MAX_VALUE))
-                      .addLast(new CrossdockServerInboundHandler(behaviors));
-                }
-              })
-          .option(ChannelOption.SO_BACKLOG, 128)
-          .childOption(ChannelOption.SO_KEEPALIVE, true);
+    ServerBootstrap bootstrap = new ServerBootstrap();
+    bootstrap
+        .group(bossGroup, workerGroup)
+        .channel(NioServerSocketChannel.class)
+        .childHandler(
+            new ChannelInitializer<SocketChannel>() {
+              @Override
+              public void initChannel(SocketChannel ch) throws Exception {
+                ch.pipeline()
+                    .addLast(new HttpServerCodec())
+                    .addLast(new HttpObjectAggregator(Integer.MAX_VALUE))
+                    .addLast(new CrossdockServerInboundHandler(behaviors));
+              }
+            })
+        .option(ChannelOption.SO_BACKLOG, 128)
+        .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-      ChannelFuture future = bootstrap.bind("0.0.0.0", crossdockPort).sync();
-
-      future.channel().closeFuture().sync();
-    } finally {
-      workerGroup.shutdownGracefully();
-      bossGroup.shutdownGracefully();
-    }
+    ChannelFuture future = bootstrap.bind("0.0.0.0", crossdockPort).sync();
+    future
+        .channel()
+        .closeFuture()
+        .addListener(
+            new GenericFutureListener<Future<? super Void>>() {
+              @Override
+              public void operationComplete(Future<? super Void> future) throws Exception {
+                workerGroup.shutdownGracefully();
+                bossGroup.shutdownGracefully();
+              }
+            });
+    return future.channel().closeFuture();
   }
 }

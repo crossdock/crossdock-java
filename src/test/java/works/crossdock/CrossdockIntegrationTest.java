@@ -21,32 +21,60 @@
  */
 package works.crossdock;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Future;
+import org.apache.http.client.fluent.Request;
 import org.junit.Test;
 import works.crossdock.client.Behavior;
 
 public class CrossdockIntegrationTest {
   private static final int crossdockPort = 8080;
-  private static CrossdockClient crossdockClient;
 
   @Test
- public void testEndtoEnd() throws Exception {
+  public void testEndtoEnd() throws Exception {
     class TestBehavior implements Behavior {
 
       @Override
       public CompletionStage<CrossdockResponse> run(CrossdockRequest request) throws Exception {
         return CompletableFuture.completedFuture(
-            new CrossdockResponse().success("Reply from integration"));
+            new CrossdockResponse().success("Success from integration"));
       }
     }
 
-    Map<String,Behavior> behaviorMap = new HashMap<>();
+    Map<String, Behavior> behaviorMap = new HashMap<>();
     behaviorMap.put("test", new TestBehavior());
-    crossdockClient = new CrossdockClient(crossdockPort,behaviorMap);
-    crossdockClient.start();
+    CrossdockClient crossdockClient = new CrossdockClient(crossdockPort, behaviorMap);
+    Future future = crossdockClient.start();
 
+    String successResponse =
+        Request.Get("http://127.0.0.1:8080/?behavior=test")
+            .connectTimeout(1000)
+            .socketTimeout(1000)
+            .execute()
+            .returnContent()
+            .asString();
+    assertEquals(
+        "Integration test",
+        "[{\"output\":\"Success from integration\",\"status\":\"passed\"}]",
+        successResponse);
+
+    String errorResponse =
+        Request.Get("http://127.0.0.1:8080/?behavior=test1")
+            .connectTimeout(1000)
+            .socketTimeout(1000)
+            .execute()
+            .returnContent()
+            .asString();
+    assertEquals(
+        "Failed behavior",
+        "[{\"output\":\"Unsupported behavior: test1\",\"status\":\"skipped\"}]",
+        errorResponse);
+
+    future.cancel(true);
   }
 }

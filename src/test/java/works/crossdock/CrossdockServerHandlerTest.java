@@ -35,6 +35,7 @@ import works.crossdock.client.Behavior;
 public class CrossdockServerHandlerTest {
   @Test
   public void testPopulateRequest() {
+    System.out.println("Runnign tests");
     Map<String, String> paramsMap = new HashMap<>();
     paramsMap.put("key1", "value1");
     paramsMap.put("key2", "value2");

@@ -6,7 +6,7 @@ help:  ## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
 
 crossdock: dockclean
-	docker-compose build java
+	docker-compose build
 	docker-compose run crossdock
 
 crossdock-fresh: dockclean build
@@ -34,7 +34,7 @@ build:
 	./gradlew build --stacktrace
 
 harness:  # Run harness crossdock server locally without docker.
-	java -jar crossdock-java/build/libs/crossdock-jar-with-dependencies.jar
+	java -jar crossdock-java/build/libs/crossdock-0.0.1-SNAPSHOT.jar
 
 release: clean build test
 	@echo "please make sure you are using java 7."

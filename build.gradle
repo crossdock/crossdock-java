@@ -70,12 +70,14 @@ dependencies {
     compile group: 'io.netty', name: 'netty-all', version: '4.1.7.Final'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.6'
     compile group: 'com.google.guava', name: 'guava', version: '21.0'
+    compile group: 'org.apache.httpcomponents', name:'fluent-hc', version:'4.5.3'
 
     compileOnly group: 'com.google.code.findbugs', name: 'annotations'
     compileOnly group: 'org.projectlombok', name: 'lombok'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'org.mockito', name: 'mockito-core', version: '2.6.8'
+
 
     testCompileOnly group: 'org.projectlombok', name: 'lombok'
 }
@@ -173,21 +175,3 @@ task javadocRoot(type: Javadoc) {
     options.links 'http://docs.oracle.com/javase/8/docs/api/'
     destinationDir = file("${buildDir}/docs/javadoc")
 }
-
-
-// TODO with bryan
-//create a single Jar with all dependencies
-task fatJar(type: Jar) {
-    manifest {
-        attributes('Implementation-crossdock-java': 'crossdock-java',
-                'Implementation-Version': project.version,
-                'Main-Class': 'works.crossdock.CrossdockClient')
-    }
-    baseName = project.name + '-jar-with-dependencies'
-    version = ''
-    classifier = ''
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}
-
-assemble.dependsOn fatJar
