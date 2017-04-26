@@ -38,8 +38,8 @@ import java.util.Map;
 import works.crossdock.client.Behavior;
 
 /**
- * Runs crossdock behaviors. Behaviors are passed as input to the client.
- * Callers explicitly contorl the start / stop of the client.
+ * Runs crossdock behaviors. Behaviors are passed as input to the client. Callers explicitly contorl
+ * the start / stop of the client.
  */
 public class CrossdockClient {
   private final int crossdockPort;
@@ -55,6 +55,7 @@ public class CrossdockClient {
   public CrossdockClient(int crossdockPort, Map<String, Behavior> inputBehaviors) {
     this.crossdockPort = crossdockPort;
     this.behaviors = new HashMap<>(inputBehaviors);
+    this.future = null;
   }
 
   /**
@@ -98,6 +99,8 @@ public class CrossdockClient {
 
   /** Stops the channel that client is listening on. */
   public void stop() {
-    future.cancel(true);
+    if (future != null) {
+      future.cancel(true);
+    }
   }
 }
