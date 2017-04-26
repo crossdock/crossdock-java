@@ -35,12 +35,16 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import works.crossdock.client.Behavior;
 
+/**
+ * Runs crossdock behaviors. Behaviors are passed as input to the client.
+ * Callers explicitly contorl the start / stop of the client.
+ */
 public class CrossdockClient {
   private final int crossdockPort;
-  private final Map<String, Behavior> behaviors = new HashMap<>();
+  private final Map<String, Behavior> behaviors;
+  private ChannelFuture future;
 
   /**
    * Creates a client handle for crossdock tests.
@@ -50,17 +54,15 @@ public class CrossdockClient {
    */
   public CrossdockClient(int crossdockPort, Map<String, Behavior> inputBehaviors) {
     this.crossdockPort = crossdockPort;
-    for (Entry<String, Behavior> entry : inputBehaviors.entrySet()) {
-      behaviors.put(entry.getKey(), entry.getValue());
-    }
+    this.behaviors = new HashMap<>(inputBehaviors);
   }
 
   /**
-   * Starts and stops the crossdock server.
+   * Starts the client by starting underlying http server.
    *
-   * @throws Exception if the start of server fails
+   * @throws Exception if server fails to start
    */
-  public Future<Void> start() throws Exception {
+  public void start() throws Exception {
     EventLoopGroup bossGroup = new NioEventLoopGroup();
     EventLoopGroup workerGroup = new NioEventLoopGroup();
     ServerBootstrap bootstrap = new ServerBootstrap();
@@ -80,7 +82,7 @@ public class CrossdockClient {
         .option(ChannelOption.SO_BACKLOG, 128)
         .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-    ChannelFuture future = bootstrap.bind("0.0.0.0", crossdockPort).sync();
+    future = bootstrap.bind("0.0.0.0", crossdockPort).sync();
     future
         .channel()
         .closeFuture()
@@ -92,6 +94,10 @@ public class CrossdockClient {
                 bossGroup.shutdownGracefully();
               }
             });
-    return future.channel().closeFuture();
+  }
+
+  /** Stops the channel that client is listening on. */
+  public void stop() {
+    future.cancel(true);
   }
 }

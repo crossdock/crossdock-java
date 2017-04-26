@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.Future;
 import org.apache.http.client.fluent.Request;
 import org.junit.Test;
 import works.crossdock.client.Behavior;
@@ -49,7 +48,7 @@ public class CrossdockIntegrationTest {
     Map<String, Behavior> behaviorMap = new HashMap<>();
     behaviorMap.put("test", new TestBehavior());
     CrossdockClient crossdockClient = new CrossdockClient(crossdockPort, behaviorMap);
-    Future future = crossdockClient.start();
+    crossdockClient.start();
 
     String successResponse =
         Request.Get("http://127.0.0.1:8080/?behavior=test")
@@ -75,6 +74,6 @@ public class CrossdockIntegrationTest {
         "[{\"output\":\"Unsupported behavior: test1\",\"status\":\"skipped\"}]",
         errorResponse);
 
-    future.cancel(true);
+    crossdockClient.stop();
   }
 }
