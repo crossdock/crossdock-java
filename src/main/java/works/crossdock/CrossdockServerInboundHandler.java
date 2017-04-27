@@ -38,19 +38,16 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import works.crossdock.client.Behavior;
 
 public class CrossdockServerInboundHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
-  private final Map<String, Behavior> behaviors = new HashMap<String, Behavior>();
+  private final Map<String, Behavior> behaviors;
 
   /** Populates all the different behaviors supported. */
   public CrossdockServerInboundHandler(Map<String, Behavior> inputBehaviors) {
-    for (Entry<String, Behavior> entry : inputBehaviors.entrySet()) {
-      behaviors.put(entry.getKey(), entry.getValue());
-    }
+    behaviors = new HashMap<>(inputBehaviors);
   }
 
   @Override
@@ -72,7 +69,7 @@ public class CrossdockServerInboundHandler extends SimpleChannelInboundHandler<F
               if (ex != null) {
                 ctx.fireExceptionCaught(ex);
               } else {
-                writeAndCloseChannel(ctx, response);
+                writeResponseAndCloseChannel(ctx, response);
               }
             });
   }
@@ -100,7 +97,7 @@ public class CrossdockServerInboundHandler extends SimpleChannelInboundHandler<F
             });
   }
 
-  private void writeAndCloseChannel(ChannelHandlerContext ctx, CrossdockResponse response) {
+  private void writeResponseAndCloseChannel(ChannelHandlerContext ctx, CrossdockResponse response) {
     ObjectMapper objectMapper = new ObjectMapper();
     byte[] body;
     HttpResponseStatus status = HttpResponseStatus.OK;

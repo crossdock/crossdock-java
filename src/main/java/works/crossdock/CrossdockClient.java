@@ -38,24 +38,24 @@ import java.util.Map;
 import works.crossdock.client.Behavior;
 
 /**
- * Runs crossdock behaviors. Behaviors are passed as input to the client. Callers explicitly contorl
+ * Runs crossdock behaviors. Behaviors are passed as input to the client. Callers explicitly control
  * the start / stop of the client.
  */
 public class CrossdockClient {
-  private final int crossdockPort;
+  private final int listenPort;
   private final Map<String, Behavior> behaviors;
-  private ChannelFuture future;
+  private ChannelFuture channelHandleFuture;
 
   /**
    * Creates a client handle for crossdock tests.
    *
-   * @param crossdockPort port to run the crossdock server on
+   * @param listenPort port to run the crossdock server on
    * @param inputBehaviors map of behaviors and actions to execute
    */
-  public CrossdockClient(int crossdockPort, Map<String, Behavior> inputBehaviors) {
-    this.crossdockPort = crossdockPort;
+  public CrossdockClient(int listenPort, Map<String, Behavior> inputBehaviors) {
+    this.listenPort = listenPort;
     this.behaviors = new HashMap<>(inputBehaviors);
-    this.future = null;
+    this.channelHandleFuture = null;
   }
 
   /**
@@ -83,8 +83,8 @@ public class CrossdockClient {
         .option(ChannelOption.SO_BACKLOG, 128)
         .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-    future = bootstrap.bind("0.0.0.0", crossdockPort).sync();
-    future
+    channelHandleFuture = bootstrap.bind("0.0.0.0", listenPort).sync();
+    channelHandleFuture
         .channel()
         .closeFuture()
         .addListener(
@@ -99,8 +99,8 @@ public class CrossdockClient {
 
   /** Stops the channel that client is listening on. */
   public void stop() {
-    if (future != null) {
-      future.cancel(true);
+    if (channelHandleFuture != null) {
+      channelHandleFuture.cancel(true);
     }
   }
 }

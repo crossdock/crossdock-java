@@ -21,11 +21,11 @@
  */
 package works.crossdock;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class TestResult {
-  @Getter private String output;
-  @Getter private String status;
+  @Getter private final String output;
+  @Getter private final String status;
 }

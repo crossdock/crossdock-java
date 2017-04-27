@@ -24,9 +24,9 @@ package works.crossdock.server;
 /** Defines the start and stop functionality of different subjects. */
 public interface Subject {
 
-  /** Starts the subject for different subjects. */
+  /** Starts the subject. */
   public void start();
 
-  /** Stops the subject for different subjects. */
+  /** Stops the subject. */
   public void stop();
 }
