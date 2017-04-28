@@ -86,7 +86,7 @@ public class CrossdockServerInboundHandler extends SimpleChannelInboundHandler<F
     }
     FullHttpResponse httpResponse =
         new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, Unpooled.wrappedBuffer(body));
-    httpResponse.headers().add("connection","close");
+    httpResponse.headers().add("connection", "close");
     ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
   }
 }

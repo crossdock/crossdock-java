@@ -28,8 +28,7 @@ public enum Status {
   FAILED("failed"),
   SKIPPED("skipped");
 
-  @Getter
-  private final String name;
+  @Getter private final String name;
 
   Status(String name) {
     this.name = name;

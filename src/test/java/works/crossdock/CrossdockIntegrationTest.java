@@ -52,7 +52,6 @@ public class CrossdockIntegrationTest {
     CrossdockClient crossdockClient = new CrossdockClient(8080, behaviorMap);
     crossdockClient.start();
 
-
     String successResponse =
         Request.Get("http://127.0.0.1:8080/?behavior=test")
             .connectTimeout(1000)
@@ -83,8 +82,6 @@ public class CrossdockIntegrationTest {
     Map<String, Behavior> behaviorMap = new HashMap<>();
     CrossdockClient crossdockClient = new CrossdockClient(8081, behaviorMap);
     crossdockClient.start();
-
-
 
     String skipResponse =
         Request.Get("http://127.0.0.1:8081/?behavior=test1")
@@ -125,7 +122,6 @@ public class CrossdockIntegrationTest {
     behaviorMap.put("test", new TestBehavior());
     CrossdockClient crossdockClient = new CrossdockClient(8082, behaviorMap);
     crossdockClient.start();
-
 
     String errorResponse =
         Request.Get("http://127.0.0.1:8082/?behavior=test")
