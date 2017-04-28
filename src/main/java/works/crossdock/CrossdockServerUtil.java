@@ -21,17 +21,33 @@
  */
 package works.crossdock;
 
-import lombok.Getter;
+import com.google.common.base.Throwables;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import works.crossdock.client.Behavior;
 
-public enum Status {
-  PASSED("passed"),
-  FAILED("failed"),
-  SKIPPED("skipped");
+class CrossdockServerUtil {
 
-  @Getter
-  private final String name;
+  /**
+   * Runs the request against the passed behavior.
+   *
+   * @param br behavior to run against
+   * @param req request to run
+   * @return CompletionStage that contains crossdockResponse
+   * @throws Exception if behavior throws an exception
+   */
+  public static CompletionStage<CrossdockResponse> runBehavior(Behavior br, CrossdockRequest req)
+      throws Exception {
+    if (br == null) {
+      return CompletableFuture.completedFuture(
+          new CrossdockResponse().skipped("Unsupported behavior: " + req.getParam("behavior")));
+    }
 
-  Status(String name) {
-    this.name = name;
+    return br.run(req)
+        .exceptionally(
+            ex -> {
+              String exceptionAsString = Throwables.getStackTraceAsString(ex);
+              return new CrossdockResponse().error(exceptionAsString);
+            });
   }
 }

@@ -24,7 +24,6 @@ package works.crossdock;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -35,11 +34,7 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import works.crossdock.client.Behavior;
 
 public class CrossdockServerInboundHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
@@ -47,23 +42,28 @@ public class CrossdockServerInboundHandler extends SimpleChannelInboundHandler<F
 
   /** Populates all the different behaviors supported. */
   public CrossdockServerInboundHandler(Map<String, Behavior> inputBehaviors) {
-    behaviors = new HashMap<>(inputBehaviors);
+    behaviors = inputBehaviors;
+  }
+
+  private void healthCheck(ChannelHandlerContext ctx) {
+    FullHttpResponse httpResponse =
+        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+    ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
+    return;
   }
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest fullHttpRequest)
       throws Exception {
     QueryStringDecoder queryStringDecoder = new QueryStringDecoder(fullHttpRequest.uri());
-    CrossdockRequest request = populateRequest(queryStringDecoder);
+    CrossdockRequest request = CrossdockRequest.fromQueryParameters(queryStringDecoder);
     String behavior = request.getParam("behavior");
     if (behavior == null) {
-      FullHttpResponse httpResponse =
-          new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-      ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
+      healthCheck(ctx);
       return;
     }
     Behavior br = behaviors.get(behavior);
-    runBehavior(br, request)
+    CrossdockServerUtil.runBehavior(br, request)
         .whenComplete(
             (response, ex) -> {
               if (ex != null) {
@@ -71,29 +71,6 @@ public class CrossdockServerInboundHandler extends SimpleChannelInboundHandler<F
               } else {
                 writeResponseAndCloseChannel(ctx, response);
               }
-            });
-  }
-
-  /**
-   * Runs the request against the passed behavior.
-   *
-   * @param br behavior to run against
-   * @param req request to run
-   * @return CompletionStage that contains crossdockResponse
-   * @throws Exception if behavior throws an exception
-   */
-  public CompletionStage<CrossdockResponse> runBehavior(Behavior br, CrossdockRequest req)
-      throws Exception {
-    if (br == null) {
-      return CompletableFuture.completedFuture(
-          new CrossdockResponse().skipped("Unsupported behavior: " + req.getParam("behavior")));
-    }
-
-    return br.run(req)
-        .exceptionally(
-            ex -> {
-              String exceptionAsString = Throwables.getStackTraceAsString(ex);
-              return new CrossdockResponse().error(exceptionAsString);
             });
   }
 
@@ -110,23 +87,5 @@ public class CrossdockServerInboundHandler extends SimpleChannelInboundHandler<F
     FullHttpResponse httpResponse =
         new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, Unpooled.wrappedBuffer(body));
     ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
-  }
-
-  /**
-   * Constructs a crossdockRequest from passed queryStringDecoder.
-   *
-   * @param queryStringDecoder decoder to construct request from
-   * @return crossDockRequest formed from the queryStringDecoder
-   */
-  public CrossdockRequest populateRequest(QueryStringDecoder queryStringDecoder) {
-    Map<String, List<String>> queryParams = queryStringDecoder.parameters();
-    Map<String, String> params = new HashMap<>();
-    queryParams.forEach(
-        (key, value) -> {
-          if (value != null && value.size() > 0) {
-            params.put(key, value.get(0));
-          }
-        });
-    return new CrossdockRequest(params);
   }
 }

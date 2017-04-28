@@ -23,8 +23,12 @@ package works.crossdock;
 
 import static org.junit.Assert.assertEquals;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import org.apache.http.client.fluent.Request;
@@ -32,14 +36,12 @@ import org.junit.Test;
 import works.crossdock.client.Behavior;
 
 public class CrossdockIntegrationTest {
-  private static final int crossdockPort = 8080;
 
   @Test
-  public void testEndtoEnd() throws Exception {
+  public void testSuccessEndtoEnd() throws Exception {
     class TestBehavior implements Behavior {
-
       @Override
-      public CompletionStage<CrossdockResponse> run(CrossdockRequest request) throws Exception {
+      public CompletionStage<CrossdockResponse> run(CrossdockRequest request) {
         return CompletableFuture.completedFuture(
             new CrossdockResponse().success("Success from integration"));
       }
@@ -47,8 +49,9 @@ public class CrossdockIntegrationTest {
 
     Map<String, Behavior> behaviorMap = new HashMap<>();
     behaviorMap.put("test", new TestBehavior());
-    CrossdockClient crossdockClient = new CrossdockClient(crossdockPort, behaviorMap);
+    CrossdockClient crossdockClient = new CrossdockClient(8080, behaviorMap);
     crossdockClient.start();
+
 
     String successResponse =
         Request.Get("http://127.0.0.1:8080/?behavior=test")
@@ -57,22 +60,94 @@ public class CrossdockIntegrationTest {
             .execute()
             .returnContent()
             .asString();
-    assertEquals(
-        "Integration test",
-        "[{\"output\":\"Success from integration\",\"status\":\"passed\"}]",
-        successResponse);
 
-    String errorResponse =
-        Request.Get("http://127.0.0.1:8080/?behavior=test1")
+    System.out.println(successResponse);
+    List<Map<String, String>> resultList =
+        new ObjectMapper()
+            .readValue(successResponse, new TypeReference<List<Map<String, String>>>() {});
+    assertEquals(resultList.size(), 1);
+    Map<String, String> gotParamsMap = resultList.get(0);
+
+    Map<String, String> wantedParamsMap = new HashMap<>();
+    wantedParamsMap.put("output", "Success from integration");
+    wantedParamsMap.put("status", "PASSED");
+    for (Entry<String, String> gotEntry : gotParamsMap.entrySet()) {
+      assertEquals("Success behavior", wantedParamsMap.get(gotEntry.getKey()), gotEntry.getValue());
+    }
+
+    crossdockClient.stop();
+  }
+
+  @Test
+  public void testSkipEndtoEnd() throws Exception {
+    Map<String, Behavior> behaviorMap = new HashMap<>();
+    CrossdockClient crossdockClient = new CrossdockClient(8081, behaviorMap);
+    crossdockClient.start();
+
+
+
+    String skipResponse =
+        Request.Get("http://127.0.0.1:8081/?behavior=test1")
             .connectTimeout(1000)
             .socketTimeout(1000)
             .execute()
             .returnContent()
             .asString();
-    assertEquals(
-        "Failed behavior",
-        "[{\"output\":\"Unsupported behavior: test1\",\"status\":\"skipped\"}]",
-        errorResponse);
+
+    System.out.println(skipResponse);
+    List<Map<String, String>> resultList =
+        new ObjectMapper()
+            .readValue(skipResponse, new TypeReference<List<Map<String, String>>>() {});
+    assertEquals(resultList.size(), 1);
+    Map<String, String> gotParamsMap = resultList.get(0);
+
+    Map<String, String> wantedParamsMap = new HashMap<>();
+    wantedParamsMap.put("output", "Unsupported behavior: test1");
+    wantedParamsMap.put("status", "SKIPPED");
+    for (Entry<String, String> gotEntry : gotParamsMap.entrySet()) {
+      assertEquals("Skip behavior", wantedParamsMap.get(gotEntry.getKey()), gotEntry.getValue());
+    }
+
+    crossdockClient.stop();
+  }
+
+  @Test
+  public void testErrorEndtoEnd() throws Exception {
+    class TestBehavior implements Behavior {
+      @Override
+      public CompletionStage<CrossdockResponse> run(CrossdockRequest request) {
+        return CompletableFuture.completedFuture(
+            new CrossdockResponse().error("Error from integration"));
+      }
+    }
+
+    Map<String, Behavior> behaviorMap = new HashMap<>();
+    behaviorMap.put("test", new TestBehavior());
+    CrossdockClient crossdockClient = new CrossdockClient(8082, behaviorMap);
+    crossdockClient.start();
+
+
+    String errorResponse =
+        Request.Get("http://127.0.0.1:8082/?behavior=test")
+            .connectTimeout(1000)
+            .socketTimeout(1000)
+            .execute()
+            .returnContent()
+            .asString();
+
+    System.out.println(errorResponse);
+    List<Map<String, String>> resultList =
+        new ObjectMapper()
+            .readValue(errorResponse, new TypeReference<List<Map<String, String>>>() {});
+    assertEquals(resultList.size(), 1);
+    Map<String, String> gotParamsMap = resultList.get(0);
+
+    Map<String, String> wantedParamsMap = new HashMap<>();
+    wantedParamsMap.put("output", "Error from integration");
+    wantedParamsMap.put("status", "FAILED");
+    for (Entry<String, String> gotEntry : gotParamsMap.entrySet()) {
+      assertEquals("Error behavior", wantedParamsMap.get(gotEntry.getKey()), gotEntry.getValue());
+    }
 
     crossdockClient.stop();
   }

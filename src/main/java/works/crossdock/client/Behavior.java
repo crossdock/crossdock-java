@@ -26,5 +26,5 @@ import works.crossdock.CrossdockRequest;
 import works.crossdock.CrossdockResponse;
 
 public interface Behavior {
-  public CompletionStage<CrossdockResponse> run(CrossdockRequest request) throws Exception;
+  public CompletionStage<CrossdockResponse> run(CrossdockRequest request);
 }

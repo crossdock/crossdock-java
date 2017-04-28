@@ -35,15 +35,12 @@ import works.crossdock.client.Behavior;
 public class CrossdockServerHandlerTest {
   @Test
   public void testPopulateRequest() {
-    System.out.println("Runnign tests");
     Map<String, String> paramsMap = new HashMap<>();
     paramsMap.put("key1", "value1");
     paramsMap.put("key2", "value2");
-    CrossdockServerInboundHandler serverInboundHandler =
-        new CrossdockServerInboundHandler(new HashMap<>());
     QueryStringDecoder decoder =
         new QueryStringDecoder("http://fakerequest?key1=value1&key2=value2");
-    CrossdockRequest gotRequest = serverInboundHandler.populateRequest(decoder);
+    CrossdockRequest gotRequest = CrossdockRequest.fromQueryParameters(decoder);
     for (Entry<String, String> params : paramsMap.entrySet()) {
       assertEquals(
           "Test CrossdockRequest", params.getValue(), gotRequest.getParam(params.getKey()));
@@ -54,7 +51,7 @@ public class CrossdockServerHandlerTest {
   public void testRunBehavior() throws Exception {
     class TestBehavior implements Behavior {
       @Override
-      public CompletionStage<CrossdockResponse> run(CrossdockRequest request) throws Exception {
+      public CompletionStage<CrossdockResponse> run(CrossdockRequest request) {
         CrossdockResponse crossdockResponse =
             new CrossdockResponse().success(request.getParam("ping"));
         return CompletableFuture.completedFuture(crossdockResponse);
@@ -62,12 +59,10 @@ public class CrossdockServerHandlerTest {
     }
 
     TestBehavior testBehavior = new TestBehavior();
-    CrossdockServerInboundHandler serverInboundHandler =
-        new CrossdockServerInboundHandler(new HashMap<>());
     QueryStringDecoder decoder = new QueryStringDecoder("http://fakerequest?ping=pong");
-    CrossdockRequest request = serverInboundHandler.populateRequest(decoder);
+    CrossdockRequest request = CrossdockRequest.fromQueryParameters(decoder);
     CrossdockResponse crossdockResponse =
-        serverInboundHandler.runBehavior(testBehavior, request).toCompletableFuture().get();
+        CrossdockServerUtil.runBehavior(testBehavior, request).toCompletableFuture().get();
     assertEquals("Test runBehavior", crossdockResponse.getResults().get(0).getOutput(), "pong");
   }
 }

@@ -25,21 +25,40 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 
+/** Represents the response from Crossdock test run. */
 public class CrossdockResponse {
   @Getter private final List<TestResult> results = new ArrayList<>();
 
+  /**
+   * Sets the success for a crossdock test.
+   *
+   * @param message description about the test
+   * @return CrossdockResponse with succeeded test
+   */
   public CrossdockResponse success(String message) {
-    results.add(new TestResult(message, Status.PASSED.getDesc()));
+    results.add(new TestResult(message, Status.PASSED));
     return this;
   }
 
+  /**
+   * Sets the error for a crossdock test.
+   *
+   * @param message description about the test
+   * @return CrossdockResponse with errored test set
+   */
   public CrossdockResponse error(String message) {
-    results.add(new TestResult(message, Status.FAILED.getDesc()));
+    results.add(new TestResult(message, Status.FAILED));
     return this;
   }
 
+  /**
+   * Sets the skipped response for a crossdock test.
+   *
+   * @param message description about the test
+   * @return CrossdockResponse with skipped test set
+   */
   public CrossdockResponse skipped(String message) {
-    results.add(new TestResult(message, Status.SKIPPED.getDesc()));
+    results.add(new TestResult(message, Status.SKIPPED));
     return this;
   }
 }

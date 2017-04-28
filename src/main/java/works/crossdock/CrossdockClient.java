@@ -24,7 +24,6 @@ package works.crossdock;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -33,6 +32,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import works.crossdock.client.Behavior;
@@ -44,7 +44,7 @@ import works.crossdock.client.Behavior;
 public class CrossdockClient {
   private final int listenPort;
   private final Map<String, Behavior> behaviors;
-  private ChannelFuture channelHandleFuture;
+  private ChannelFuture cancel;
 
   /**
    * Creates a client handle for crossdock tests.
@@ -54,8 +54,8 @@ public class CrossdockClient {
    */
   public CrossdockClient(int listenPort, Map<String, Behavior> inputBehaviors) {
     this.listenPort = listenPort;
-    this.behaviors = new HashMap<>(inputBehaviors);
-    this.channelHandleFuture = null;
+    this.behaviors = Collections.unmodifiableMap(new HashMap<>(inputBehaviors));
+    this.cancel = null;
   }
 
   /**
@@ -79,12 +79,10 @@ public class CrossdockClient {
                     .addLast(new HttpObjectAggregator(Integer.MAX_VALUE))
                     .addLast(new CrossdockServerInboundHandler(behaviors));
               }
-            })
-        .option(ChannelOption.SO_BACKLOG, 128)
-        .childOption(ChannelOption.SO_KEEPALIVE, true);
+            });
 
-    channelHandleFuture = bootstrap.bind("0.0.0.0", listenPort).sync();
-    channelHandleFuture
+    cancel = bootstrap.bind("0.0.0.0", listenPort).sync();
+    cancel
         .channel()
         .closeFuture()
         .addListener(
@@ -99,8 +97,8 @@ public class CrossdockClient {
 
   /** Stops the channel that client is listening on. */
   public void stop() {
-    if (channelHandleFuture != null) {
-      channelHandleFuture.cancel(true);
+    if (cancel != null) {
+      cancel.cancel(true);
     }
   }
 }
