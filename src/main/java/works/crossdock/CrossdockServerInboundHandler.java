@@ -25,7 +25,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -48,7 +47,7 @@ public class CrossdockServerInboundHandler extends SimpleChannelInboundHandler<F
   private void healthCheck(ChannelHandlerContext ctx) {
     FullHttpResponse httpResponse =
         new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-    ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
+    ctx.writeAndFlush(httpResponse);
     return;
   }
 
@@ -86,7 +85,6 @@ public class CrossdockServerInboundHandler extends SimpleChannelInboundHandler<F
     }
     FullHttpResponse httpResponse =
         new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, Unpooled.wrappedBuffer(body));
-    httpResponse.headers().add("connection", "close");
-    ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
+    ctx.writeAndFlush(httpResponse);
   }
 }

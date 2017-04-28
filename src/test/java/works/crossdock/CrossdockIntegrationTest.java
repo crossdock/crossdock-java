@@ -60,7 +60,6 @@ public class CrossdockIntegrationTest {
             .returnContent()
             .asString();
 
-    System.out.println(successResponse);
     List<Map<String, String>> resultList =
         new ObjectMapper()
             .readValue(successResponse, new TypeReference<List<Map<String, String>>>() {});
@@ -82,7 +81,6 @@ public class CrossdockIntegrationTest {
     Map<String, Behavior> behaviorMap = new HashMap<>();
     CrossdockClient crossdockClient = new CrossdockClient(8081, behaviorMap);
     crossdockClient.start();
-
     String skipResponse =
         Request.Get("http://127.0.0.1:8081/?behavior=test1")
             .connectTimeout(1000)
@@ -91,7 +89,6 @@ public class CrossdockIntegrationTest {
             .returnContent()
             .asString();
 
-    System.out.println(skipResponse);
     List<Map<String, String>> resultList =
         new ObjectMapper()
             .readValue(skipResponse, new TypeReference<List<Map<String, String>>>() {});
@@ -131,7 +128,6 @@ public class CrossdockIntegrationTest {
             .returnContent()
             .asString();
 
-    System.out.println(errorResponse);
     List<Map<String, String>> resultList =
         new ObjectMapper()
             .readValue(errorResponse, new TypeReference<List<Map<String, String>>>() {});

@@ -30,6 +30,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.HttpServerKeepAliveHandler;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import java.util.Collections;
@@ -76,6 +77,7 @@ public class CrossdockClient {
               public void initChannel(SocketChannel ch) throws Exception {
                 ch.pipeline()
                     .addLast(new HttpServerCodec())
+                    .addLast(new HttpServerKeepAliveHandler())
                     .addLast(new HttpObjectAggregator(Integer.MAX_VALUE))
                     .addLast(new CrossdockServerInboundHandler(behaviors));
               }
