@@ -1,0 +1,176 @@
+plugins {
+    id "checkstyle"
+    id "findbugs"
+    id "idea"
+    id "jacoco"
+    id "java"
+    id "maven"
+    id "signing"
+    id "com.github.kt3k.coveralls" version "2.5.0"
+    id "com.github.hierynomus.license" version "0.12.1"
+    id "com.github.sherter.google-java-format" version "0.6"
+    id "io.spring.dependency-management" version "1.0.1.RELEASE"
+}
+
+description = 'Crossdock library to enable cross language testing'
+
+group = 'works.crossdock'
+
+version = '0.0.1-SNAPSHOT'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+[compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
+
+def getRepositoryUsername() {
+    return hasProperty('ossrhUsername') ? ossrhUsername : ""
+}
+
+def getRepositoryPassword() {
+    return hasProperty('ossrhPassword') ? ossrhPassword : ""
+}
+
+// Set up checkstyle
+def checkstyleConfigDir = file("${rootDir}/config/checkstyle")
+checkstyle {
+    toolVersion = "7.4"
+    configFile = file("${checkstyleConfigDir}/checkstyle.xml")
+    configProperties.checkstyleConfigDir = checkstyleConfigDir
+}
+
+// Set up findbugs
+tasks.withType(FindBugs) {
+    excludeFilter = file("${rootDir}/config/findbugs/exclude.xml")
+    reports {
+        xml.enabled false
+        html.enabled true
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencyManagement {
+    dependencies {
+        dependency group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1'
+        dependency group: 'org.apache.thrift', name: 'libthrift', version: '0.9.3'
+        dependency group: 'org.projectlombok', name: 'lombok', version: '1.16.8'
+        dependencySet(group: 'io.opentracing', version: '0.20.10') {
+            entry 'opentracing-api'
+            entry 'opentracing-mock'
+            entry 'opentracing-noop'
+        }
+    }
+}
+
+dependencies {
+    compile group: 'io.opentracing', name: 'opentracing-mock'
+    compile group: 'io.netty', name: 'netty-all', version: '4.1.7.Final'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.6'
+    compile group: 'com.google.guava', name: 'guava', version: '21.0'
+
+    compileOnly group: 'com.google.code.findbugs', name: 'annotations'
+    compileOnly group: 'org.projectlombok', name: 'lombok'
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.6.8'
+    testCompile group: 'org.apache.httpcomponents', name:'fluent-hc', version:'4.5.3'
+
+    testCompileOnly group: 'org.projectlombok', name: 'lombok'
+}
+
+task delombok {
+    inputs.files files(sourceSets.main.allSource.srcDirs)
+    outputs.dir file("${buildDir}/src-delomboked/main/java")
+
+    doLast {
+        FileCollection collection = (
+            files(configurations.compile) + files(configurations.compileOnly)
+        )
+
+        ant.taskdef(
+            name: 'delombok',
+            classname: 'lombok.delombok.ant.Tasks$Delombok',
+            classpath: collection.asPath,
+        )
+
+        ant.delombok(
+            from: 'src/main/java',
+            to: "${buildDir}/src-delomboked/main/java",
+            classpath: collection.asPath,
+        )
+    }
+}
+
+license {
+    header rootProject.file('license-template')
+    strictCheck true
+    include '**/*.java'
+    ext.year = Calendar.getInstance().get(Calendar.YEAR)
+    ext.name = 'Uber Technologies, Inc'
+    ignoreFailures = false
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
+}
+
+googleJavaFormat {
+    toolVersion '1.3'
+    include '**/*.java'
+}
+
+classes.dependsOn tasks.licenseFormat
+classes.dependsOn tasks.googleJavaFormat
+
+// central maven release
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+            }
+
+            // TODO
+            pom.project {
+                name 'crossdock-java'
+                packaging 'jar'
+                description 'A library to enable cross language testing'
+                url 'https://github.com/crossdock/crossdock-java'
+
+                scm {
+                    connection 'scm:git:git@github.com/crossdock/crossdock-java.git'
+                    developerConnection 'scm:git:git@github.com/crossdock/crossdock-java.git'
+                    url 'git@github.com/crossdock/crossdock-java.git'
+                }
+
+                licenses {
+                    license {
+                        name 'MIT License'
+                        url 'http://www.opensource.org/licenses/mit-license.php'
+                    }
+                }
+            }
+        }
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.4' //version required
+}
+
+task javadocRoot(type: Javadoc) {
+    description = 'Generates Javadocs for all modules'
+    dependsOn project.tasks.delombok
+    source project.tasks.delombok.outputs.files
+    classpath = files(sourceSets.main.compileClasspath)
+    options.links 'http://docs.oracle.com/javase/8/docs/api/'
+    destinationDir = file("${buildDir}/docs/javadoc")
+}

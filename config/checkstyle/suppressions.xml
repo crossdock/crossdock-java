@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Puppy Crawl//DTD Suppressions 1.1//EN"
+        "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
+
+<suppressions>
+    <!-- Ignore files inside a gen-java directory. -->
+    <suppress files="[\\/]generated-sources[\\/]" checks="."/>
+    <!-- Ignore Javadoc checks for tests -->
+    <suppress files=".*[\\/]src[\\/]test[\\/].+\.java" checks="JavadocMethod"/>
+</suppressions>
