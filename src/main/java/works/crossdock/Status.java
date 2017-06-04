@@ -30,6 +30,11 @@ public enum Status {
 
   @Getter private final String name;
 
+  @Override
+  public String toString() {
+    return name;
+  }
+
   Status(String name) {
     this.name = name;
   }

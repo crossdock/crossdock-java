@@ -60,6 +60,7 @@ public class CrossdockIntegrationTest {
             .returnContent()
             .asString();
 
+    System.out.println(successResponse);
     List<Map<String, String>> resultList =
         new ObjectMapper()
             .readValue(successResponse, new TypeReference<List<Map<String, String>>>() {});
@@ -68,7 +69,7 @@ public class CrossdockIntegrationTest {
 
     Map<String, String> wantedParamsMap = new HashMap<>();
     wantedParamsMap.put("output", "Success from integration");
-    wantedParamsMap.put("status", "PASSED");
+    wantedParamsMap.put("status", "passed");
     for (Entry<String, String> gotEntry : gotParamsMap.entrySet()) {
       assertEquals("Success behavior", wantedParamsMap.get(gotEntry.getKey()), gotEntry.getValue());
     }
@@ -97,7 +98,7 @@ public class CrossdockIntegrationTest {
 
     Map<String, String> wantedParamsMap = new HashMap<>();
     wantedParamsMap.put("output", "Unsupported behavior: test1");
-    wantedParamsMap.put("status", "SKIPPED");
+    wantedParamsMap.put("status", "skipped");
     for (Entry<String, String> gotEntry : gotParamsMap.entrySet()) {
       assertEquals("Skip behavior", wantedParamsMap.get(gotEntry.getKey()), gotEntry.getValue());
     }
@@ -136,7 +137,7 @@ public class CrossdockIntegrationTest {
 
     Map<String, String> wantedParamsMap = new HashMap<>();
     wantedParamsMap.put("output", "Error from integration");
-    wantedParamsMap.put("status", "FAILED");
+    wantedParamsMap.put("status", "failed");
     for (Entry<String, String> gotEntry : gotParamsMap.entrySet()) {
       assertEquals("Error behavior", wantedParamsMap.get(gotEntry.getKey()), gotEntry.getValue());
     }

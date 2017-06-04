@@ -36,7 +36,7 @@ public class CrossdockResponse {
    * @return CrossdockResponse with succeeded test
    */
   public CrossdockResponse success(String message) {
-    results.add(new TestResult(message, Status.PASSED));
+    results.add(new TestResult(message, Status.PASSED.getName()));
     return this;
   }
 
@@ -47,7 +47,7 @@ public class CrossdockResponse {
    * @return CrossdockResponse with errored test set
    */
   public CrossdockResponse error(String message) {
-    results.add(new TestResult(message, Status.FAILED));
+    results.add(new TestResult(message, Status.FAILED.getName()));
     return this;
   }
 
@@ -58,7 +58,7 @@ public class CrossdockResponse {
    * @return CrossdockResponse with skipped test set
    */
   public CrossdockResponse skipped(String message) {
-    results.add(new TestResult(message, Status.SKIPPED));
+    results.add(new TestResult(message, Status.SKIPPED.getName()));
     return this;
   }
 }
