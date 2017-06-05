@@ -16,7 +16,7 @@ description = 'Crossdock library to enable cross language testing'
 
 group = 'works.crossdock'
 
-version = '0.0.1-SNAPSHOT'
+version = '0.0.3-SNAPSHOT'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
